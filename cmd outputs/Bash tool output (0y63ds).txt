@@ -1,0 +1,178 @@
+cells: 18
+========================= 0 markdown
+# 02b — Build the collection from the 2023 Wikipedia dump (Plan Step 2)
+
+**Replaces the KILT scan.** KILT can no longer be loaded with the current `datasets` library, and streaming it took ~9 hours.
+
+**Source:** Hugging Face `wikimedia/wikipedia`, config `20231101.en` (English Wikipedia, 1 Nov 2023), stored as Parquet.
+
+**How pages are matched** (the dump has no Wikidata IDs):
+Wikidata ID (PopQA `s_uri`) → English title (Wikidata API) → page ID (Wikipedia API, follows redirects) → the dump row with that page ID.
+Backup: the PopQA title → page ID. Last resort: plain title match inside the dump.
+
+**Output (data folder):** `wiki2023_cache.pkl` (same keys as the v5 KILT cache: `kilt_pages`, `distractor_pool`, `match_method`),
+`wiki2023_report.json`, `halt_rag_audit_w23.csv`.
+
+**Run on Colab.** Expect ~11 GB download and roughly 30–60 minutes in total. No GPU needed.
+========================= 1 code
+!pip install -q pyarrow huggingface_hub requests
+# ── Setup: works on a laptop (VS Code) and on Colab ───────────────────────
+import os, sys, subprocess
+ON_COLAB = "google.colab" in sys.modules
+if ON_COLAB:
+    # Colab: get the code from GitHub (push your latest commit first) and mount Drive
+    REPO, BRANCH = "/content/HALT-RAG", "lift_signal"
+    if not os.path.exists(REPO):
+        subprocess.run(["git", "clone", "-q", "-b", BRANCH,
+                        "https://github.com/Shaithra2107/HALT-RAG", REPO], check=True)
+    else:
+        subprocess.run(["git", "-C", REPO, "pull", "-q"], check=True)
+    from google.colab import drive
+    drive.mount("/content/drive")
+else:
+    # laptop: this notebook sits in <repo>/notebooks, so the repo is one level up
+    REPO = os.path.abspath("..") if os.path.basename(os.getcwd()) == "notebooks" else os.getcwd()
+sys.path.insert(0, os.path.join(REPO, "src"))
+
+from halt_rag.config import load_config, data_path, data_dir
+cfg = load_config(os.path.join(REPO, "config.yaml"))
+print("running on:", "Colab" if ON_COLAB else "laptop", "| data folder:", data_dir(cfg))
+========================= 2 markdown
+## Settings
+========================= 3 code
+import pandas as pd, numpy as np, pickle, json, re
+from halt_rag.data.popqa import wikidata_qid, parse_answers, normalise_title
+from halt_rag.data.wiki2023 import make_get, build_targets, split_text, plan_background
+
+DUMP_REPO, DUMP_CONFIG = "wikimedia/wikipedia", "20231101.en"
+SEED       = cfg["seed"]
+N_BACKGROUND = cfg["collection"]["reservoir_pages"]                 # 10,000
+MIN_CHARS  = cfg["collection"]["min_para_chars"]                    # 50
+MAX_PARAS  = cfg["collection"]["max_para_per_background_page"]      # 40
+AUDIT_IN   = data_path(cfg, "halt_rag_audit_v5.csv")
+CACHE_OUT  = data_path(cfg, "wiki2023_cache.pkl")
+REPORT_OUT = data_path(cfg, "wiki2023_report.json")
+AUDIT_OUT  = data_path(cfg, "halt_rag_audit_w23.csv")
+print(AUDIT_IN, "->", CACHE_OUT)
+========================= 4 markdown
+## 1. Questions and their Wikidata IDs
+========================= 5 code
+audit = pd.read_csv(AUDIT_IN)
+if "s_uri" not in audit.columns:
+    from datasets import load_dataset
+    pq_df = load_dataset("akariasai/PopQA", split="test").to_pandas()
+    key = "id" if "id" in audit.columns else "question"
+    audit = audit.merge(pq_df[[key, "s_uri"]].drop_duplicates(key), on=key, how="left")
+audit["qid"] = audit["s_uri"].apply(wikidata_qid)
+print(f"{len(audit)} questions | with Wikidata ID: {audit['qid'].notna().sum()}")
+========================= 6 markdown
+## 2. Wikidata ID → title → page ID (a few minutes, polite API calls)
+========================= 7 code
+get = make_get()
+targets = build_targets(audit, get)
+methods = pd.Series([t["method"] for t in targets.values()]).value_counts(dropna=False)
+print(f"{len(targets)} unique subject pages"); print(methods.to_string())
+want_ids = {t["pageid"]: k for k, t in targets.items() if t["pageid"]}
+want_titles = {tt: k for k, t in targets.items() for tt in t["titles"]}
+========================= 8 markdown
+## 3. Download the dump files (Parquet, ~11 GB)
+========================= 9 code
+from huggingface_hub import HfApi, hf_hub_download
+import pyarrow.parquet as pq
+from tqdm.auto import tqdm
+
+files = sorted(f for f in HfApi().list_repo_files(DUMP_REPO, repo_type="dataset")
+               if f.startswith(DUMP_CONFIG + "/") and f.endswith(".parquet"))
+print(len(files), "files, e.g.", files[0])
+local = [hf_hub_download(DUMP_REPO, f, repo_type="dataset") for f in tqdm(files, desc="download")]
+========================= 10 markdown
+## 4. Find the subject pages (reads only the `id` and `title` columns)
+Page ID first; if that fails, a plain title match inside the dump.
+========================= 11 code
+import pyarrow.parquet as pq
+from tqdm.auto import tqdm
+rows_per_file, target_pos = [], {}       # key -> (file, row, how)
+for fi, path in enumerate(tqdm(local, desc="ids")):
+    t = pq.read_table(path, columns=["id", "title"])
+    rows_per_file.append(t.num_rows)
+    ids = np.array(t.column("id").to_pylist(), dtype=np.int64)
+    titles = t.column("title").to_pylist()
+    for r in np.nonzero(np.isin(ids, list(want_ids)))[0]:
+        k = want_ids[int(ids[r])]
+        target_pos[k] = (fi, int(r), targets[k]["method"])
+    for r, ti in enumerate(titles):                       # backup: title match
+        k = want_titles.get(normalise_title(ti))
+        if k and k not in target_pos:
+            target_pos[k] = (fi, r, "dump_title")
+total_rows = sum(rows_per_file)
+print(f"articles in dump: {total_rows:,} | subject pages found: {len(target_pos)} / {len(targets)}")
+========================= 12 markdown
+## 5. Read the text of the subject pages and of random background pages
+========================= 13 code
+exclude = {(f, r) for f, r, _ in target_pos.values()}
+plan, order = plan_background(rows_per_file, N_BACKGROUND, SEED, exclude)
+
+need = {}                                   # file -> set of rows to read
+for f, r, _ in target_pos.values(): need.setdefault(f, set()).add(r)
+for f, rs in plan.items(): need.setdefault(f, set()).update(rs)
+
+text_at = {}                                # (file,row) -> (title, paragraphs)
+for fi in tqdm(sorted(need), desc="text"):
+    rows = sorted(need[fi])
+    t = pq.read_table(local[fi], columns=["title", "text"]).take(rows)
+    for r, ti, tx in zip(rows, t.column("title").to_pylist(), t.column("text").to_pylist()):
+        text_at[(fi, r)] = (ti, split_text(tx, MIN_CHARS))
+
+kilt_pages, match_method = {}, {}           # same names as the KILT caches
+for k, (f, r, how) in target_pos.items():
+    paras = text_at[(f, r)][1]
+    if paras:
+        kilt_pages[k], match_method[k] = paras, how
+
+distractor_pool = []
+for pos in order:                           # random order -> first N valid pages win
+    ti, paras = text_at[pos]
+    if paras:
+        distractor_pool.append({"title": ti, "qid": None, "paragraphs": paras[:MAX_PARAS]})
+    if len(distractor_pool) == N_BACKGROUND:
+        break
+print(f"subject pages with text: {len(kilt_pages)} | background pages: {len(distractor_pool)}")
+========================= 14 markdown
+## 6. Save + report (send these numbers to Dr. Kasuni)
+========================= 15 code
+pickle.dump({"kilt_pages": kilt_pages, "distractor_pool": distractor_pool,
+             "match_method": match_method, "source": f"{DUMP_REPO}/{DUMP_CONFIG}",
+             "seed": SEED, "articles_in_dump": total_rows}, open(CACHE_OUT, "wb"))
+
+m = pd.Series(match_method).value_counts().to_dict()
+report = {"source": f"{DUMP_REPO} {DUMP_CONFIG}", "articles_in_dump": total_rows,
+          "subject_pages_total": len(targets), "subject_pages_found": len(kilt_pages),
+          "found_by_qid": m.get("qid", 0), "found_by_title": m.get("title", 0),
+          "found_by_dump_title": m.get("dump_title", 0),
+          "missing": len(targets) - len(kilt_pages), "background_pages": len(distractor_pool),
+          "kilt_v5_title_match_found": 133}
+json.dump(report, open(REPORT_OUT, "w"), indent=2)
+for k, v in report.items(): print(f"{k:28s} {v:,}" if isinstance(v, int) else f"{k:28s} {v}")
+missing = sorted(set(targets) - set(kilt_pages))
+print(f"\nstill missing ({len(missing)}):", missing[:15])
+========================= 16 markdown
+## 7. Answer on the subject page? → `halt_rag_audit_w23.csv`
+`found` = the gold answer appears on the subject's page · `answer_not_on_page` · `page_missing`.
+========================= 17 code
+def norm(t): return re.sub(r"\s+", " ", str(t).lower().strip())
+def answer_on_page(answers, paras):
+    text = norm(" ".join(paras))
+    return any(re.search(r"(?<![\w])" + re.escape(norm(a)) + r"(?![\w])", text) for a in answers if norm(a))
+
+status, how = [], []
+for _, r in audit.iterrows():
+    k = normalise_title(r["wiki_title"]); paras = kilt_pages.get(k)
+    if paras is None: status.append("page_missing"); how.append(None)
+    else:
+        status.append("found" if answer_on_page(parse_answers(r["answers_list"]), paras) else "answer_not_on_page")
+        how.append(match_method.get(k))
+audit["m2_status_w23"], audit["match_method_w23"] = status, how
+print(pd.crosstab(audit["m2_status_w23"], audit["band"], margins=True))
+if "m2_status_v5" in audit.columns:
+    print("\nKILT v5 -> 2023:"); print(pd.crosstab(audit["m2_status_v5"], audit["m2_status_w23"]))
+audit.to_csv(AUDIT_OUT, index=False); print("saved", AUDIT_OUT)

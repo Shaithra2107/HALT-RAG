@@ -121,6 +121,83 @@ def plan_background(rows_per_file: list[int], n: int, seed: int,
     return {f: sorted(rs) for f, rs in plan.items()}, order
 
 
+# ── Filling gaps ─────────────────────────────────────────────────────────────
+# The Hugging Face copy of the dump is missing some articles (it has ~6.4M of
+# ~6.7M; e.g. Minnesota, Sri Lanka). For those we ask Wikipedia for the exact
+# revision that was live on the dump date, so the collection stays a
+# 1 Nov 2023 snapshot.
+
+DUMP_DATE = "2023-11-01T00:00:00Z"
+
+
+def revision_at(pageid: int, get, at: str = DUMP_DATE):
+    """The page's last revision at or before `at`. Returns (revid, title, timestamp) or None."""
+    data = get(WIKIPEDIA_API, {"action": "query", "prop": "revisions", "pageids": pageid,
+                               "rvlimit": 1, "rvdir": "older", "rvstart": at,
+                               "rvprop": "ids|timestamp", "formatversion": 2})
+    pages = (data.get("query") or {}).get("pages") or []
+    if not pages or pages[0].get("missing") or not pages[0].get("revisions"):
+        return None
+    rev = pages[0]["revisions"][0]
+    return int(rev["revid"]), pages[0].get("title", ""), rev.get("timestamp", "")
+
+
+class _ParagraphParser:
+    """Collect the text of <p> elements from rendered Wikipedia HTML,
+    skipping footnote markers, styles and scripts."""
+    SKIP = {"sup", "style", "script"}
+
+    def __init__(self):
+        from html.parser import HTMLParser
+        outer = self
+
+        class P(HTMLParser):
+            def handle_starttag(self, tag, attrs):
+                if tag in outer.SKIP:
+                    outer.skip += 1
+                elif tag == "p":
+                    outer.in_p += 1
+                    outer.buf = []
+
+            def handle_endtag(self, tag):
+                if tag in outer.SKIP and outer.skip:
+                    outer.skip -= 1
+                elif tag == "p" and outer.in_p:
+                    outer.in_p -= 1
+                    outer.paras.append("".join(outer.buf))
+
+            def handle_data(self, data):
+                if outer.in_p and not outer.skip:
+                    outer.buf.append(data)
+
+        self.parser, self.skip, self.in_p, self.buf, self.paras = P(), 0, 0, [], []
+
+    def run(self, html: str) -> list[str]:
+        self.parser.feed(html or "")
+        self.parser.close()
+        return self.paras
+
+
+def html_to_paragraphs(html: str, min_chars: int = 50) -> list[str]:
+    import re
+    paras = [re.sub(r"\s+", " ", re.sub(r"\[(\d+|[a-z]|citation needed)\]", "", p)).strip()
+             for p in _ParagraphParser().run(html)]
+    return clean_paragraphs(paras, min_chars)
+
+
+def fetch_page_at(pageid: int, get, at: str = DUMP_DATE, min_chars: int = 50):
+    """Text of a page as it was at `at`. Returns dict or None."""
+    rev = revision_at(pageid, get, at)
+    if rev is None:
+        return None
+    revid, title, ts = rev
+    data = get(WIKIPEDIA_API, {"action": "parse", "oldid": revid, "prop": "text",
+                               "disablelimitreport": 1, "formatversion": 2})
+    html = (data.get("parse") or {}).get("text", "")
+    return {"title": title, "revid": revid, "timestamp": ts,
+            "paragraphs": html_to_paragraphs(html, min_chars)}
+
+
 def build_targets(audit, get, qid_col="qid", title_col="wiki_title"):
     """For each question: the key used downstream (normalised wiki_title, same as v5),
     the page ID to look for, and how that page ID was found."""
