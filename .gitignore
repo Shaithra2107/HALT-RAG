@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Data and big outputs stay out of git (they live in Google Drive)
+/data/
+*.pkl
+*.npy
+*.faiss
+*.parquet
+/results/**/*.csv
+/results/**/*.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

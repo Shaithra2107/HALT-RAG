@@ -1,0 +1,183 @@
+running on: laptop | data folder: E:\shaithu\4th Year\IRP\halt-rag-repo\HALT-RAG\data
+300 rows | columns: ['question', 'answers_list', 'band', 'wiki_title', 'm2_status', 'm2_match', 'm3_covered', 'answer_string_match', 'passage_1', 'title_1', 'passage_2', 'title_2', 'passage_3', 'title_3', 'passage_4', 'title_4', 'passage_5', 'title_5', 'gold_answers', 'evidence_label', 'evidence_reason', 'm2_match_v5', 'm2_status_v5', 'lift', 'relevance', 'consistency', 'rand_mu', 'rand_sd', 'ret_idx', 'kw_coverage', 'clarity', 'cas', 'cas_mean', 'cas_soft', 'answers', 'gen_ctx', 'y_gen', 'y_judge', 'y_cov', 'is_tail', 'evaluable']
+signals: ['lift', 'relevance', 'consistency', 'kw_coverage', 'clarity', 'cas', 'cas_mean']
+labels : {'y_judge': '124/300', 'y_cov': '123/300', 'y_gen': '106/300'}
+bands  : {'tail': 150, 'head': 150}
+max |difference| vs stored lift: 0.0
+smallest rand_sd: 0.07008100301027298
+<pandas.io.formats.style.Styler at 0x189d7f42490>
+
+=== scope=all (n=300) | label=y_judge (pos=124) ===
+             auroc_label  label_low  label_high  auprc_label  \
+signal                                                         
+lift               0.708      0.649       0.765        0.633   
+relevance          0.738      0.680       0.794        0.665   
+consistency        0.638      0.573       0.701        0.531   
+kw_coverage        0.597      0.533       0.659        0.458   
+clarity            0.524      0.457       0.591        0.466   
+cas                0.795      0.737       0.843        0.749   
+cas_mean           0.646      0.584       0.707        0.538   
+
+             auroc_popularity  pop_low  pop_high  popularity_detector  
+signal                                                                 
+lift                    0.557    0.491     0.622                False  
+relevance               0.533    0.470     0.595                False  
+consistency             0.506    0.440     0.570                False  
+kw_coverage             0.694    0.635     0.750                 True  
+clarity                 0.351    0.292     0.414                 True  
+cas                     0.547    0.481     0.615                False  
+cas_mean                0.604    0.538     0.670                False  
+
+=== scope=all (n=300) | label=y_cov (pos=123) ===
+             auroc_label  label_low  label_high  auprc_label  \
+signal                                                         
+lift               0.748      0.691       0.803        0.677   
+relevance          0.796      0.742       0.844        0.742   
+consistency        0.670      0.607       0.728        0.564   
+kw_coverage        0.658      0.600       0.720        0.517   
+clarity            0.423      0.356       0.490        0.385   
+cas                0.834      0.782       0.883        0.823   
+cas_mean           0.717      0.655       0.777        0.639   
+
+             auroc_popularity  pop_low  pop_high  popularity_detector  
+signal                                                                 
+lift                    0.557    0.491     0.622                False  
+relevance               0.533    0.470     0.595                False  
+consistency             0.506    0.440     0.570                False  
+kw_coverage             0.694    0.635     0.750                 True  
+clarity                 0.351    0.292     0.414                 True  
+cas                     0.547    0.481     0.615                False  
+cas_mean                0.604    0.538     0.670                False  
+
+=== scope=all (n=300) | label=y_gen (pos=106) ===
+             auroc_label  label_low  label_high  auprc_label  \
+signal                                                         
+lift               0.722      0.662       0.778        0.575   
+relevance          0.752      0.690       0.809        0.596   
+consistency        0.623      0.553       0.690        0.456   
+kw_coverage        0.608      0.546       0.670        0.405   
+clarity            0.505      0.438       0.579        0.383   
+cas                0.809      0.750       0.860        0.747   
+cas_mean           0.642      0.573       0.708        0.498   
+
+             auroc_popularity  pop_low  pop_high  popularity_detector  
+signal                                                                 
+lift                    0.557    0.491     0.622                False  
+relevance               0.533    0.470     0.595                False  
+consistency             0.506    0.440     0.570                False  
+kw_coverage             0.694    0.635     0.750                 True  
+clarity                 0.351    0.292     0.414                 True  
+cas                     0.547    0.481     0.615                False  
+cas_mean                0.604    0.538     0.670                False  
+
+=== scope=evaluable (n=134) | label=y_judge (pos=101) ===
+             auroc_label  label_low  label_high  auprc_label  \
+signal                                                         
+lift               0.488      0.374       0.600        0.771   
+relevance          0.537      0.423       0.650        0.777   
+consistency        0.463      0.346       0.581        0.734   
+kw_coverage        0.468      0.340       0.591        0.722   
+clarity            0.686      0.572       0.794        0.849   
+cas                0.786      0.678       0.884        0.889   
+cas_mean           0.603      0.492       0.719        0.796   
+
+             auroc_popularity  pop_low  pop_high  popularity_detector  
+signal                                                                 
+lift                    0.621    0.525     0.713                 True  
+relevance               0.641    0.544     0.733                 True  
+consistency             0.669    0.574     0.757                 True  
+kw_coverage             0.616    0.525     0.705                 True  
+clarity                 0.253    0.176     0.337                 True  
+cas                     0.473    0.373     0.573                False  
+cas_mean                0.565    0.464     0.662                False  
+
+=== scope=evaluable (n=134) | label=y_cov (pos=108) ===
+             auroc_label  label_low  label_high  auprc_label  \
+signal                                                         
+lift               0.537      0.413       0.662        0.828   
+relevance          0.601      0.482       0.720        0.861   
+consistency        0.561      0.434       0.679        0.830   
+kw_coverage        0.530      0.408       0.649        0.823   
+clarity            0.498      0.368       0.634        0.807   
+cas                0.848      0.774       0.919        0.961   
+cas_mean           0.759      0.662       0.849        0.931   
+
+             auroc_popularity  pop_low  pop_high  popularity_detector  
+signal                                                                 
+lift                    0.621    0.525     0.713                 True  
+relevance               0.641    0.544     0.733                 True  
+consistency             0.669    0.574     0.757                 True  
+kw_coverage             0.616    0.525     0.705                 True  
+clarity                 0.253    0.176     0.337                 True  
+cas                     0.473    0.373     0.573                False  
+cas_mean                0.565    0.464     0.662                False  
+
+=== scope=evaluable (n=134) | label=y_gen (pos=90) ===
+             auroc_label  label_low  label_high  auprc_label  \
+signal                                                         
+lift               0.516      0.405       0.622        0.690   
+relevance          0.527      0.423       0.635        0.681   
+consistency        0.465      0.351       0.572        0.635   
+kw_coverage        0.472      0.365       0.577        0.646   
+clarity            0.629      0.524       0.725        0.747   
+cas                0.795      0.709       0.874        0.877   
+cas_mean           0.582      0.485       0.684        0.740   
+
+             auroc_popularity  pop_low  pop_high  popularity_detector  
+signal                                                                 
+lift                    0.621    0.525     0.713                 True  
+relevance               0.641    0.544     0.733                 True  
+consistency             0.669    0.574     0.757                 True  
+kw_coverage             0.616    0.525     0.705                 True  
+clarity                 0.253    0.176     0.337                 True  
+cas                     0.473    0.373     0.573                False  
+cas_mean                0.565    0.464     0.662                False  
+corr(lift, relevance): Spearman 0.783 | Pearson 0.825
+         relevance_only  relevance+lift   gain
+label                                         
+y_judge           0.736           0.735 -0.001
+y_cov             0.794           0.790 -0.004
+y_gen             0.750           0.753  0.003
+C:\Users\sumat\AppData\Local\Temp\ipykernel_6636\44764482.py:33: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  plt.show()
+
+=== label=y_judge ===
+             auroc           low          high       
+band          head   tail   head   tail   head   tail
+signal                                               
+cas          0.828  0.788  0.753  0.713  0.895  0.859
+cas_mean     0.666  0.685  0.574  0.599  0.754  0.765
+clarity      0.422  0.573  0.332  0.478  0.519  0.668
+consistency  0.719  0.567  0.630  0.474  0.799  0.657
+kw_coverage  0.598  0.674  0.511  0.587  0.688  0.762
+lift         0.747  0.707  0.662  0.621  0.820  0.784
+relevance    0.776  0.727  0.684  0.644  0.854  0.806
+
+=== label=y_cov ===
+             auroc           low          high       
+band          head   tail   head   tail   head   tail
+signal                                               
+cas          0.875  0.790  0.807  0.706  0.930  0.865
+cas_mean     0.748  0.706  0.666  0.615  0.825  0.787
+clarity      0.323  0.504  0.244  0.407  0.417  0.602
+consistency  0.750  0.585  0.662  0.496  0.825  0.678
+kw_coverage  0.672  0.676  0.589  0.594  0.753  0.762
+lift         0.816  0.691  0.738  0.607  0.879  0.773
+relevance    0.850  0.736  0.771  0.655  0.913  0.812
+
+=== label=y_gen ===
+             auroc           low          high       
+band          head   tail   head   tail   head   tail
+signal                                               
+cas          0.881  0.775  0.811  0.691  0.942  0.855
+cas_mean     0.722  0.640  0.626  0.548  0.809  0.724
+clarity      0.401  0.547  0.307  0.447  0.502  0.645
+consistency  0.706  0.557  0.609  0.458  0.793  0.655
+kw_coverage  0.643  0.674  0.555  0.589  0.733  0.761
+lift         0.768  0.720  0.676  0.636  0.844  0.798
+relevance    0.810  0.730  0.720  0.649  0.881  0.809
+corr(lift, relevance) = 0.783  (alarm above 0.9)
+AUROC gain from adding Lift (y_judge) = -0.001
+
+DECISION: Lift is distinct enough. Go ahead with Step 2 as planned.
+saved E:\shaithu\4th Year\IRP\halt-rag-repo\HALT-RAG\data\step1_quick_checks.json

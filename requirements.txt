@@ -1,0 +1,20 @@
+# Pinned so results can be repeated.
+# Colab already has torch; install the rest with: pip install -r requirements.txt
+numpy>=1.26,<3
+pandas>=2.1
+scipy>=1.11
+scikit-learn>=1.4
+pyyaml>=6.0
+tqdm>=4.66
+matplotlib>=3.8              # plots in the notebooks
+jinja2>=3.1                  # pandas .style tables in the notebooks
+datasets==3.6.0             # same version the v5 scan used for facebook/kilt_wikipedia
+sentence-transformers==3.0.1
+faiss-cpu>=1.8
+transformers>=4.41
+# Laptop only: to open and run the notebooks in VS Code. Colab has these already.
+jupyterlab>=4.1
+ipykernel>=6.29
+pytest>=8.0                  # python -m pytest tests
+# Step 2 (hard negatives / second search). Needs Java 21; install only when needed:
+# pyserini==0.17.1
