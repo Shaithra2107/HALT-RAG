@@ -8,6 +8,15 @@ paths:
   data_dir: data                                     # laptop; relative to the repo root, not in git
   audit_v5: halt_rag_audit_v5.csv                    # the 300 pilot questions
   signals_v5: halt_rag_v5_signals.csv                # output of HALT_RAG_v5_signals.ipynb
+  # Step 2, the 2023 Wikipedia dump (02b_wiki2023_build)
+  wiki2023_cache: wiki2023_cache.pkl                 # kilt_pages, distractor_pool, match_method
+  wiki2023_report: wiki2023_report.json
+  audit_w23: halt_rag_audit_w23.csv                  # audit + m2_status_w23, match_method_w23
+  # Step 4, signals on the 2023 collection (03_signals_w23)
+  signals_w23: halt_rag_w23_signals.csv
+  results_w23: halt_rag_w23_results.json
+  corpus_embs_w23: corp_embs_w23.npy                 # cached corpus embeddings (never the v5 ones)
+  # Retired: notebook 02 (KILT). KILT no longer loads with the current datasets library.
   kilt_cache_v6: kilt_cache_v6.pkl                   # output of 02_kilt_scan_wikidata
   kilt_ckpt_v6: kilt_ckpt_v6.pkl
   scan_report_v6: kilt_scan_v6_report.json
@@ -22,7 +31,8 @@ collection:
   kilt_dataset: facebook/kilt_wikipedia
   min_para_chars: 50       # drop paragraphs shorter than this
   passage_words: 100       # join paragraphs into passages of up to this many words
-  reservoir_pages: 10000   # random background pages for Lift
+  reservoir_pages: 10000   # random background pages stored in the cache
+  background_pages_used: 5000   # how many of them the signals run actually uses
   max_para_per_background_page: 40
   checkpoint_every: 200000
 
@@ -35,6 +45,7 @@ signals:
   lift_eps: 1.0e-6         # epsilon in max(sigma, eps)
   qa_model: deepset/roberta-base-squad2
   cas_max_answer_len: 30
+  lm: google/flan-t5-base  # y_gen generator and the placeholder y_judge (NOT the final judge)
 
 eval:
   n_bootstrap: 2000
