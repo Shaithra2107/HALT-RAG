@@ -16,6 +16,9 @@ paths:
   signals_w23: halt_rag_w23_signals.csv
   results_w23: halt_rag_w23_results.json
   corpus_embs_w23: corp_embs_w23.npy                 # cached corpus embeddings (never the v5 ones)
+  # Step 3 + hard-negative Lift (04_retrieval_and_hard_lift)
+  signals_w23_hard: halt_rag_w23_signals_hard.csv    # signals_w23 + lift_hard, score_gap, gap_hard
+  results_w23_hard: halt_rag_w23_hard_results.json
   # Retired: notebook 02 (KILT). KILT no longer loads with the current datasets library.
   kilt_cache_v6: kilt_cache_v6.pkl                   # output of 02_kilt_scan_wikidata
   kilt_ckpt_v6: kilt_ckpt_v6.pkl
@@ -39,10 +42,16 @@ collection:
 retrieval:
   encoder: sentence-transformers/all-MiniLM-L6-v2
   top_k: 5
+  top_k_wide: 10           # the wider list: Recall@10 and MRR@10 in notebook 04
 
 signals:
   lift_pool: 5000          # random corpus passages used as Lift's baseline
   lift_eps: 1.0e-6         # epsilon in max(sigma, eps)
+  # lift_hard's background: ranks 21..100 of the question's OWN ranking, after the
+  # subject page has been removed. Rank 1-20 are left out so the background is not
+  # the retrieval itself; 100 keeps it to passages the retriever still rated highly.
+  hard_neg_start: 21
+  hard_neg_end: 100
   qa_model: deepset/roberta-base-squad2
   cas_max_answer_len: 30
   lm: google/flan-t5-base  # y_gen generator and the placeholder y_judge (NOT the final judge)

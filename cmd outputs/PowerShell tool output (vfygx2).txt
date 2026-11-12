@@ -1,0 +1,62 @@
+==============================================================
+SETUP + LOAD
+==============================================================
+running on: laptop | data folder: E:\shaithu\4th Year\IRP\halt-rag-repo\HALT-RAG\data
+signals file: signals_w23 -> halt_rag_w23_signals.csv
+300 rows | columns: ['question', 'answers_list', 'band', 'wiki_title', 'm2_status', 'm2_match', 'm3_covered', 'answer_string_match', 'passage_1', 'title_1', 'passage_2', 'title_2', 'passage_3', 'title_3', 'passage_4', 'title_4', 'passage_5', 'title_5', 'gold_answers', 'evidence_label', 'evidence_reason', 'm2_match_v5', 'm2_status_v5', 's_uri', 'qid', 'm2_status_w23', 'match_method_w23', 'lift', 'relevance', 'consistency', 'rand_mu', 'rand_sd', 'ret_idx', 'kw_coverage', 'clarity', 'cas', 'cas_mean', 'cas_soft', 'answers', 'gen_ctx', 'y_gen', 'y_judge', 'y_cov', 'is_tail', 'evaluable', 'noise_ctrl']
+signals: ['lift', 'relevance', 'consistency', 'kw_coverage', 'clarity', 'cas', 'cas_mean']
+labels : {'y_judge': '214/300', 'y_cov': '218/300', 'y_gen': '179/300'}
+bands  : {'tail': 150, 'head': 150}
+
+==============================================================
+SCOPES
+==============================================================
+evaluable scope from: m2_status_w23 (found / answer_not_on_page)
+=== scope=all (n=300) | label=y_judge (pos=214) ===
+=== scope=all (n=300) | label=y_cov (pos=218) ===
+=== scope=all (n=300) | label=y_gen (pos=179) ===
+=== scope=evaluable (n=299) | label=y_judge (pos=214) ===
+=== scope=evaluable (n=299) | label=y_cov (pos=217) ===
+=== scope=evaluable (n=299) | label=y_gen (pos=179) ===
+
+==============================================================
+LIFT vs RELEVANCE + DECISION
+==============================================================
+corr(lift, relevance): Spearman 0.740 | Pearson 0.760
+corr(lift, relevance) = 0.740  (alarm above 0.9)  -> ok
+AUROC gain from adding Lift (y_judge) = +0.008  (alarm at or below +0.010)  -> FAIL
+
+DECISION: Lift ≈ relevance, because it adds no AUROC on top of relevance (+0.008).
+Change the background sample (hard negatives) before scaling up.
+saved E:\shaithu\4th Year\IRP\halt-rag-repo\HALT-RAG\data\step1_quick_checks_w23.json
+
+==============================================================
+AUROC 95% RANGES for lift and relevance
+==============================================================
+scope|label            signal       AUROC         95% range   AUPRC
+all|y_judge            lift         0.630  [ 0.557,  0.698]   0.801
+all|y_judge            relevance    0.628  [ 0.556,  0.699]   0.795
+all|y_cov              lift         0.658  [ 0.585,  0.725]   0.817
+all|y_cov              relevance    0.640  [ 0.564,  0.712]   0.808
+all|y_gen              lift         0.608  [ 0.544,  0.669]   0.698
+all|y_gen              relevance    0.573  [ 0.508,  0.636]   0.662
+evaluable|y_judge      lift         0.626  [ 0.556,  0.695]   0.801
+evaluable|y_judge      relevance    0.628  [ 0.558,  0.694]   0.796
+evaluable|y_cov        lift         0.660  [ 0.589,  0.729]   0.817
+evaluable|y_cov        relevance    0.641  [ 0.563,  0.710]   0.808
+evaluable|y_gen        lift         0.606  [ 0.542,  0.669]   0.698
+evaluable|y_gen        relevance    0.573  [ 0.509,  0.638]   0.664
+
+popularity AUROC (head vs tail) for the same two signals:
+all|y_judge            lift         0.611  [ 0.548,  0.675]  detector=False
+all|y_judge            relevance    0.666  [ 0.603,  0.728]  detector=True
+all|y_cov              lift         0.611  [ 0.548,  0.675]  detector=False
+all|y_cov              relevance    0.666  [ 0.603,  0.728]  detector=True
+all|y_gen              lift         0.611  [ 0.548,  0.675]  detector=True
+all|y_gen              relevance    0.666  [ 0.603,  0.728]  detector=True
+evaluable|y_judge      lift         0.609  [ 0.542,  0.671]  detector=False
+evaluable|y_judge      relevance    0.666  [ 0.603,  0.729]  detector=True
+evaluable|y_cov        lift         0.609  [ 0.542,  0.671]  detector=False
+evaluable|y_cov        relevance    0.666  [ 0.603,  0.729]  detector=True
+evaluable|y_gen        lift         0.609  [ 0.542,  0.671]  detector=True
+evaluable|y_gen        relevance    0.666  [ 0.603,  0.729]  detector=True

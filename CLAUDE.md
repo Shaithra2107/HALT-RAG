@@ -77,7 +77,8 @@ Lift(q) = (mean sim(q, top-k) − mu_R(q)) / max(sigma_R(q), eps)
 2. Collection from the 2023 Wikipedia dump — DONE (`notebooks/02b_wiki2023_build.ipynb`, Colab;
    see the Step 2 result above). Notebook 02 (KILT) is retired, do not run it.
    Still to do in this step: pick the 1,000 questions and write the corpus manifest.
-3. Retrieval check: Recall@5, Recall@10, MRR, head vs tail
+3. Retrieval check: Recall@5, Recall@10, MRR, head vs tail — `notebooks/04_retrieval_and_hard_lift.ipynb`
+   (same notebook also tests `lift_hard`, `gap_hard` and `score_gap` against `lift` and `relevance`)
 4. Signals + baselines (top-1 score, score gap, NQC, WIG); Lift with random vs hard-negative background
    — NEXT (`notebooks/03_signals_w23.ipynb`, signals on the 2023 collection)
 5. Labels (judge, string-match baseline)
