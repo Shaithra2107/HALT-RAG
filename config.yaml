@@ -43,6 +43,9 @@ retrieval:
   encoder: sentence-transformers/all-MiniLM-L6-v2
   top_k: 5
   top_k_wide: 10           # the wider list: Recall@10 and MRR@10 in notebook 04
+  # Two passages this close in score are a tie, not a different result. GPU and CPU
+  # round differently, so the same corpus can swap tied passages between runs.
+  tie_tol: 1.0e-4
 
 signals:
   lift_pool: 5000          # random corpus passages used as Lift's baseline
