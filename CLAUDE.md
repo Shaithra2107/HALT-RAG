@@ -48,7 +48,7 @@ Lift(q) = (mean sim(q, top-k) − mu_R(q)) / max(sigma_R(q), eps)
   Its `y_cov` is recomputed from its own top-5 retrieved passages (gold answer string present,
   word boundaries); the old `m3_covered` column is stale because it came from the small pilot index.
   `m2_status_w23` is used only for the `evaluable` flag (`found` / `answer_not_on_page`).
-- Full study: 1,000 questions, head/tail balanced. Top-k = 5. Seed 42.
+- Full study: 1,500 questions (750 head / 750 tail, including the 300 pilot). Top-k = 5. Seed 42.
 - Labels: automatic judge with the Joren et al. sufficiency prompt is the main label (name the model);
   string match is a baseline only (wrong on ~57% of positives in a manual sample).
   The 50 hand labels were dropped. Human check (150–200, two annotators, kappa) is still undecided.
