@@ -49,6 +49,14 @@ Lift(q) = (mean sim(q, top-k) − mu_R(q)) / max(sigma_R(q), eps)
   word boundaries); the old `m3_covered` column is stale because it came from the small pilot index.
   `m2_status_w23` is used only for the `evaluable` flag (`found` / `answer_not_on_page`).
 - Full study: 1,500 questions (750 head / 750 tail, including the 300 pilot). Top-k = 5. Seed 42.
+  Full study bands: tail s_pop < 100 (bottom ~10% of PopQA), head s_pop > 500.
+  Pilot tail was drawn from s_pop < 50, a subset of the full-study tail band.
+  The methodology chapter says ≤ 50; the final report must state this change and the reason
+  (only 356 tail entities exist below 50, not enough for 750). Head threshold is unchanged.
+  PopQA s_pop values changed since the pilot was sampled: 3 pilot tail questions now have
+  s_pop > 100, and 1 pilot head question now has s_pop ≤ 500 in the current PopQA download.
+  One pilot entity (George VI) also had two questions; the second was dropped.
+  Total 5 pilot questions dropped and replaced with new questions from the same band (seed 42).
 - Labels: automatic judge with the Joren et al. sufficiency prompt is the main label (name the model);
   string match is a baseline only (wrong on ~57% of positives in a manual sample).
   The 50 hand labels were dropped. Human check (150–200, two annotators, kappa) is still undecided.
@@ -69,6 +77,18 @@ Lift(q) = (mean sim(q, top-k) − mu_R(q)) / max(sigma_R(q), eps)
   Source `wikimedia/wikipedia 20231101.en`, 6,407,814 articles, 10,000 random background pages.
   So the old 133/299 was a title-matching problem, not a date-gap problem.
   This lifts `evaluable` from 134/300 to 299/300, which is why Step 1 has to be re-run.
+- Step 3 result (300 pilot questions, `notebooks/04_retrieval_and_hard_lift.ipynb`, run 1 in `results/`):
+  Recall@5 0.863 overall (head 0.907, tail 0.819); MRR@10 0.835; subject page ranks #1 for 82% of questions.
+  `lift_hard` did not beat `lift` on y_judge (gain +0.001) and is more popularity-linked (pop AUROC 0.69).
+  `score_gap` is the strongest cheap signal: AUROC ~0.71 on all labels, +0.13 over relevance alone,
+  Spearman with relevance −0.09 (nearly independent), popularity AUROC 0.33 (reversed = head-favoured).
+  Labels are still provisional (flan-t5-base placeholder + string match). Re-check after full run.
+  `score_gap` added to the signal set for notebook 05 onwards.
+  Notebooks 03 and 04 have been switched to `src/halt_rag` preprocessing (`clean_paragraphs`,
+  `merge_into_passages`, `dedupe`) and all outputs renamed to `_1500` names (see config.yaml).
+  Notebook 02b input switched to `audit_1500`. Run order: 02b → 03 → 04 on Colab.
+  Next: run 02b, 03, 04 on Colab with the 1,500-question audit, then notebook 05
+  (signal set including CAS + score_gap).
 
 ## The 13-step plan (status)
 0. Supervisor + paperwork — in progress
@@ -77,10 +97,11 @@ Lift(q) = (mean sim(q, top-k) − mu_R(q)) / max(sigma_R(q), eps)
 2. Collection from the 2023 Wikipedia dump — DONE (`notebooks/02b_wiki2023_build.ipynb`, Colab;
    see the Step 2 result above). Notebook 02 (KILT) is retired, do not run it.
    Still to do in this step: pick the 1,000 questions and write the corpus manifest.
-3. Retrieval check: Recall@5, Recall@10, MRR, head vs tail — `notebooks/04_retrieval_and_hard_lift.ipynb`
-   (same notebook also tests `lift_hard`, `gap_hard` and `score_gap` against `lift` and `relevance`)
+3. Retrieval check: Recall@5, Recall@10, MRR, head vs tail — DONE (`notebooks/04_retrieval_and_hard_lift.ipynb`;
+   see Step 3 result above). Also tested `lift_hard`, `gap_hard`, `score_gap`.
 4. Signals + baselines (top-1 score, score gap, NQC, WIG); Lift with random vs hard-negative background
-   — NEXT (`notebooks/03_signals_w23.ipynb`, signals on the 2023 collection)
+   — NEXT. First: switch 03 + 04 to `src/halt_rag` and scale to 1,500 questions; then notebook 05
+   (signal set: CAS + score_gap + lift, on the full 1,500-question run).
 5. Labels (judge, string-match baseline)
 6. Train/test the Signal Weight Learner: AUROC + AUPRC with bootstrap ranges, DeLong, ablation, calibration
 7. Popularity check (lead finding): AUROC vs label and vs popularity, within head / within tail, Fisher test

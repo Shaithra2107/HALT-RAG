@@ -7,6 +7,7 @@ paths:
   drive_dir: /content/drive/MyDrive/halt_rag_cache   # Colab + Google Drive
   data_dir: data                                     # laptop; relative to the repo root, not in git
   audit_v5: halt_rag_audit_v5.csv                    # the 300 pilot questions
+  audit_1500: halt_rag_audit_1500.csv                # 1,500 questions for the full study (notebook 00)
   signals_v5: halt_rag_v5_signals.csv                # output of HALT_RAG_v5_signals.ipynb
   # Step 2, the 2023 Wikipedia dump (02b_wiki2023_build)
   wiki2023_cache: wiki2023_cache.pkl                 # kilt_pages, distractor_pool, match_method
@@ -19,6 +20,16 @@ paths:
   # Step 3 + hard-negative Lift (04_retrieval_and_hard_lift)
   signals_w23_hard: halt_rag_w23_signals_hard.csv    # signals_w23 + lift_hard, score_gap, gap_hard
   results_w23_hard: halt_rag_w23_hard_results.json
+  # Full 1,500-question run (02b + 03 + 04 on halt_rag_audit_1500.csv)
+  audit_1500_w23:       halt_rag_audit_1500_w23.csv      # output of 02b on 1,500 questions
+  wiki2023_cache_1500:  wiki2023_cache_1500.pkl
+  wiki2023_report_1500: wiki2023_report_1500.json
+  corpus_embs_1500:     corp_embs_1500.npy               # corpus embeddings for the 1,500-question run
+  preprocessing_1500:   preprocessing_1500.json          # paragraph/passage counts from 03
+  signals_1500:         halt_rag_1500_signals.csv
+  results_1500:         halt_rag_1500_results.json
+  signals_1500_hard:    halt_rag_1500_signals_hard.csv   # signals_1500 + lift_hard, score_gap, gap_hard
+  results_1500_hard:    halt_rag_1500_hard_results.json
   # Retired: notebook 02 (KILT). KILT no longer loads with the current datasets library.
   kilt_cache_v6: kilt_cache_v6.pkl                   # output of 02_kilt_scan_wikidata
   kilt_ckpt_v6: kilt_ckpt_v6.pkl
@@ -26,9 +37,9 @@ paths:
 
 questions:
   dataset: akariasai/PopQA
-  n_per_band: 150          # pilot; the full study uses 500 + 500
-  tail_max_pop: 50         # pilot code used s_pop < 50
-  head_min_pop: 500        # pilot code used s_pop > 500
+  n_per_band: 150          # pilot; the full study uses 750 + 750
+  tail_max_pop: 100        # full study: s_pop < 100 (pilot used < 50; only 356 entities exist below 50)
+  head_min_pop: 500        # unchanged
 
 collection:
   kilt_dataset: facebook/kilt_wikipedia
