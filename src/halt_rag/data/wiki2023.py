@@ -100,6 +100,20 @@ def split_text(text: str, min_chars: int = 50) -> list[str]:
     return clean_paragraphs(str(text or "").split("\n"), min_chars)
 
 
+def is_background_page_ok(title: str, paragraphs: list[str], min_paras: int = 3) -> bool:
+    """Return True if this Wikipedia page is a good background page.
+    Skips disambiguation pages (by title or by 'may refer to' in the first few paragraphs),
+    'List of …' pages, and pages with fewer than `min_paras` clean paragraphs."""
+    t = str(title)
+    if "(disambiguation)" in t.lower():
+        return False
+    if t.lower().startswith("list of"):
+        return False
+    if "may refer to" in " ".join(paragraphs[:3]).lower():
+        return False
+    return len(paragraphs) >= min_paras
+
+
 def plan_background(rows_per_file: list[int], n: int, seed: int,
                     exclude: set[tuple[int, int]] = frozenset(), oversample: float = 1.3):
     """Pick about n*oversample random (file, row) positions over the whole dump,

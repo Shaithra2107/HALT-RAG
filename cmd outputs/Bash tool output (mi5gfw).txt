@@ -1,0 +1,45 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.16, pytest-9.2.0, pluggy-1.7.0 -- E:\shaithu\4th Year\IRP\halt-rag-repo\HALT-RAG\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: E:\shaithu\4th Year\IRP\halt-rag-repo\HALT-RAG
+plugins: anyio-4.16.0, platformdirs-4.14.5
+collecting ... collected 36 items
+
+tests/test_core.py::test_wikidata_qid PASSED                             [  2%]
+tests/test_core.py::test_parse_answers PASSED                            [  5%]
+tests/test_core.py::test_merge_joins_short_and_cuts_long PASSED          [  8%]
+tests/test_core.py::test_dedupe_keeps_rows_aligned PASSED                [ 11%]
+tests/test_core.py::test_lift_matches_v5_and_uses_eps PASSED             [ 13%]
+tests/test_core.py::test_lift_excludes_own_passages PASSED               [ 16%]
+tests/test_core.py::test_closed_form_equals_loop PASSED                  [ 19%]
+tests/test_core.py::test_scan_matches_qid_first_then_title PASSED        [ 22%]
+tests/test_core.py::test_auroc_ci PASSED                                 [ 25%]
+tests/test_preprocessing.py::test_clean_paragraphs_removes_non_breaking_space PASSED [ 27%]
+tests/test_preprocessing.py::test_clean_paragraphs_collapses_repeated_spaces PASSED [ 30%]
+tests/test_preprocessing.py::test_clean_paragraphs_nfkc_ligature PASSED  [ 33%]
+tests/test_preprocessing.py::test_clean_paragraphs_still_drops_short PASSED [ 36%]
+tests/test_preprocessing.py::test_clean_paragraphs_still_keeps_long PASSED [ 38%]
+tests/test_preprocessing.py::test_clean_paragraphs_strips_leading_trailing_whitespace PASSED [ 41%]
+tests/test_preprocessing.py::test_merge_does_not_break_mid_sentence_when_unnecessary PASSED [ 44%]
+tests/test_preprocessing.py::test_merge_cuts_at_sentence_boundary_not_mid_word PASSED [ 47%]
+tests/test_preprocessing.py::test_merge_breaks_mid_sentence_only_when_single_sentence_too_long PASSED [ 50%]
+tests/test_preprocessing.py::test_merge_joins_short_sentences_until_limit PASSED [ 52%]
+tests/test_preprocessing.py::test_merge_multiple_paragraphs_packed_together PASSED [ 55%]
+tests/test_preprocessing.py::test_bg_ok_accepts_normal_page PASSED       [ 58%]
+tests/test_preprocessing.py::test_bg_rejects_disambiguation_in_title PASSED [ 61%]
+tests/test_preprocessing.py::test_bg_rejects_may_refer_to_in_text PASSED [ 63%]
+tests/test_preprocessing.py::test_bg_rejects_list_of_page PASSED         [ 66%]
+tests/test_preprocessing.py::test_bg_rejects_too_few_paragraphs PASSED   [ 69%]
+tests/test_preprocessing.py::test_bg_accepts_exactly_min_paras PASSED    [ 72%]
+tests/test_preprocessing.py::test_bg_case_insensitive_disambiguation PASSED [ 75%]
+tests/test_preprocessing.py::test_bg_case_insensitive_list_of PASSED     [ 77%]
+tests/test_wiki2023.py::test_html_to_paragraphs_keeps_text_drops_footnotes PASSED [ 80%]
+tests/test_wiki2023.py::test_fetch_page_at_uses_revision_before_dump_date PASSED [ 83%]
+tests/test_wiki2023.py::test_fetch_page_at_missing_page PASSED           [ 86%]
+tests/test_wiki2023.py::test_qids_to_titles PASSED                       [ 88%]
+tests/test_wiki2023.py::test_titles_follow_normalising_and_redirects PASSED [ 91%]
+tests/test_wiki2023.py::test_build_targets_prefers_qid PASSED            [ 94%]
+tests/test_wiki2023.py::test_split_text_drops_headings PASSED            [ 97%]
+tests/test_wiki2023.py::test_plan_background_is_uniform_and_skips_targets PASSED [100%]
+
+============================= 36 passed in 33.76s =============================
