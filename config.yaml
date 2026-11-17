@@ -74,3 +74,14 @@ eval:
   n_bootstrap: 2000
   ci: 0.95
   lift_relevance_alarm: 0.9   # Step 1 decision rule
+
+judge:
+  groq_model: llama-3.3-70b-versatile
+  groq_temperature: 0
+  groq_max_tokens: 1024
+  # Rate limits: check your plan at console.groq.com/settings/limits
+  groq_rpm_limit: 30                 # requests per minute
+  groq_tpm_limit: 15000              # tokens per minute
+  groq_tpd_limit: 500000             # tokens per day
+  groq_retry_wait_secs: 2            # initial wait on 429 per-minute error (exponential backoff)
+  groq_max_retries: 5                # max retries on per-minute 429
