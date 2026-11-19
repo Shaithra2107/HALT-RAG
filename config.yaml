@@ -30,6 +30,8 @@ paths:
   results_1500:         halt_rag_1500_results.json
   signals_1500_hard:    halt_rag_1500_signals_hard.csv   # signals_1500 + lift_hard, score_gap, gap_hard
   results_1500_hard:    halt_rag_1500_hard_results.json
+  joren_1500_checkpoint: halt_rag_1500_joren_checkpoint.csv  # 03b judge checkpoint
+  joren_1500:            halt_rag_1500_joren.csv             # 03b final judge labels
   # Retired: notebook 02 (KILT). KILT no longer loads with the current datasets library.
   kilt_cache_v6: kilt_cache_v6.pkl                   # output of 02_kilt_scan_wikidata
   kilt_ckpt_v6: kilt_ckpt_v6.pkl
